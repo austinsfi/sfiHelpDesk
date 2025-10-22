@@ -1,201 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slack Alerter & Messenger</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .message {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.5s forwards;
-        }
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slack Alerter & Messenger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .message {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-2xl mx-auto p-4 md:p-8">
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl shadow-blue-500/10 flex flex-col">
-            
-                        <div class="p-6 border-b border-gray-700">
+    <div class="w-full max-w-2xl mx-auto">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl shadow-blue-500/10 flex flex-col">
             
-                            <h1 id="header-title" class="text-2xl font-bold text-center">Steel Forgings CNC Helpdesk</h1>
-            
-                <p class="text-sm text-gray-400 text-center mt-1">Send a Quick Help request, or type out the issue and we will get back with you ASAP.</p>
-            </div>
+            <div class="p-6 border-b border-slate-700">
+                <div class="flex items-center justify-center gap-2">
+                    <h1 id="header-title" class="text-2xl font-bold text-center">Steel Forgings CNC Helpdesk</h1>
+                    <div class="flex items-center gap-1.5" title="Status: Online">
+                        <div class="h-2.5 w-2.5 rounded-full bg-green-400 animate-pulse"></div>
+                        <span class="text-xs text-green-400 font-medium hidden sm:block">Online</span>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-400 text-center mt-1">Send a quick help request or type your issue below.</p>
+            </div>
 
-                        <div id="message-container" class="flex-grow p-6 space-y-4 overflow-y-auto h-80 bg-gray-900/50">
-                                <div class="message flex items-start gap-3">
-                    <div class="bg-blue-500 rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold text-sm">I</div>
-                    <div>
-                        <p class="font-semibold text-gray-300">IT Helpdesk <span class="text-xs text-gray-500 font-normal ml-1">Just now</span></p>
-                        <div class="bg-gray-700 p-3 rounded-lg mt-1 text-gray-200">
-                            <p>Use the buttons below to send an alert to IT, otherwise type a message below with your issue.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div id="message-container" class="flex-grow p-6 space-y-4 overflow-y-auto h-80 bg-slate-900">
+                <div class="message flex items-start gap-3">
+                    <div class="bg-blue-500 rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold text-sm">I</div>
+                    <div>
+                        <p class="font-semibold text-slate-300">IT Helpdesk <span class="text-xs text-slate-500 font-normal ml-1">Just now</span></p>
+                        <div class="bg-slate-700 p-3 rounded-lg mt-1 text-slate-200">
+                            <p>Use the buttons below to send an alert to IT, otherwise type a message below with your issue.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="p-6 border-t border-gray-700 bg-gray-800/80 rounded-b-2xl">
-                                <button id="send-alert-btn" class="w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-4 shadow-lg shadow-red-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    Send Quick HELP Request (Mill 20)
-                </button>
-                
-                s              <div class="flex items-center gap-2">
-                    <input type="text" id="message-input" placeholder="Type your message here..." class="flex-grow bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                    <button id="send-message-btn" class="bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0 shadow-lg shadow-blue-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+            <div class="p-6 border-t border-slate-700 bg-slate-800/80 rounded-b-2xl">
+                <button id="send-alert-btn" class="w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-4 shadow-lg shadow-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Send Quick HELP Request (Mill 20)
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <input type="text" id="message-input" placeholder="Type your message here..." class="flex-grow bg-slate-700 border border-slate-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50">
+                    <button id="send-message-btn" class="bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
-        const messageContainer = document.getElementById('message-container');
-        const sendAlertBtn = document.getElementById('send-alert-btn');
-        const sendMessageBtn = document.getElementById('send-message-btn');
-        const messageInput = document.getElementById('message-input');
-        
-        // This will hold our mill ID, e.g., "Mill-20"
-        let millId = 'Unknown Mill';
+    const messageContainer = document.getElementById('message-container');
+    const sendAlertBtn = document.getElementById('send-alert-btn');
+    const sendMessageBtn = document.getElementById('send-message-btn');
+    const messageInput = document.getElementById('message-input');
+    
+    // This will hold our mill ID, e.g., "Mill-20"
+    let millId = 'Unknown Mill';
+    let isSending = false; // Prevent double-sending
 
-        // --- NEW: Function to send to our OWN backend ---
-        async function sendToSlack(message, isAlert = false) {
-            // Display the message you've sent
-            addMessageToUI('You', message, 'sent');
+    // --- NEW: Function to toggle sending state ---
+    function setSendingState(sending) {
+        isSending = sending;
+        sendAlertBtn.disabled = sending;
+        sendMessageBtn.disabled = sending;
+        messageInput.disabled = sending;
+    }
 
-            try {
-                // Send to our /api/send endpoint, not Slack
-                const response = await fetch('/api/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    // Send the message AND the millId
-                    body: JSON.stringify({ 
-                        message: message, 
-                        mill: millId, 
-                        isAlert: isAlert 
-                    }),
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Server returned an error.');
-                }
-                
-                // Simulate a response
-nbsp;             simulateSlackResponse(message);
+    // --- Function to send to our OWN backend ---
+    async function sendToSlack(message, isAlert = false) {
+        if (isSending) return; // Don't send if already sending
+        
+        setSendingState(true);
+        
+        // Display the message you've sent
+        addMessageToUI('You', message, 'sent');
+        addMessageToUI('System', 'Sending...', 'received', 'sending-status'); // Add a temporary sending message
 
-            } catch (error) {
-                console.error(error);
-                addMessageToUI('System', `Error: Could not send message. ${error.message}`, 'received');
-            }
-        }
-
-        // This simulation function is unchanged
-        function simulateSlackResponse(originalMessage) {
-            setTimeout(() => {
-                const responses = [
-                    "We've received your message and will look into it shortly.",
-                    "Acknowledged. The IT team has been notified.",
-                    "Thanks for the update. We're on it.",
-          _         "Got it. An IT member will respond soon."
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addMessageToUI('IT Helpdesk', randomResponse, 'received');
-            }, 1500 + Math.random() * 1000); // Respond in 1.5-2.5 seconds
-s      }
-        
-        // This UI function is unchanged
-        function addMessageToUI(sender, text, type) {
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = `message flex items-start gap-3 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
-nbsp;         
-            const avatar = document.createElement('div');
-            avatar.className = `rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold text-sm ${type === 'sent' ? 'bg-indigo-500' : 'bg-blue-500'}`;
-            avatar.textContent = sender.charAt(0);
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = `flex flex-col ${type === 'sent' ? 'items-end' : 'items-start'}`;
-
-            const senderP = document.createElement('p');
-            senderP.className = 'font-semibold text-gray-300';
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'text-xs text-gray-500 font-normal ml-1';
-            timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            if (type === 'sent') {
-                senderP.textContent = `You `;
-      t         senderP.appendChild(timeSpan);
-            } else {
-                senderP.textContent = `${sender} `;
-                senderP.appendChild(timeSpan);
-            }
-
-            const textDiv = document.createElement('div');
-nbsp;       textDiv.className = `p-3 rounded-lg mt-1 ${type === 'sent' ? 'bg-indigo-600' : 'bg-gray-700'}`;
-            textDiv.textContent = text;
-            
-            messageContent.appendChild(senderP);
-a         messageContent.appendChild(textDiv);
-
-            messageWrapper.appendChild(avatar);
-            messageWrapper.appendChild(messageContent);
-            
-            messageContainer.appendChild(messageWrapper);
-            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll to bottom
-        }
-
-        // --- NEW: Run this code when the page loads ---
-  t     document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            // Get 'mill' from URL (e.g., ?mill=Mill-20)
-            millId = urlParams.get('mill') || 'Default Mill'; 
+        try {
+            // Send to our /api/send endpoint, not Slack
+            const response = await fetch('/api/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // Send the message AND the millId
+                body: JSON.stringify({ 
+                    message: message, 
+                    mill: millId, 
+                    isAlert: isAlert 
+                }),
+            });
             
-            // --- THIS BLOCK IS UPDATED ---
-            const headerTitle = document.getElementById('header-title');
-            if (millId !== 'Default Mill') {
-                headerTitle.textContent = `${millId} Helpdesk`;
+            // Remove the "Sending..." message
+            const sendingMsg = document.getElementById('sending-status');
+            if (sendingMsg) sendingMsg.remove();
+
+            if (!response.ok) {
+                throw new Error('Server returned an error.');
             }
-            
-            // Update the alert button text
-            sendAlertBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                Send Quick HELP Request (${millId})
-            `;
-        });
+            
+            // Simulate a response
+            simulateSlackResponse(message);
 
-        // --- UPDATED: Event Listeners ---
-t       sendAlertBtn.addEventListener('click', () => {
-            // The message now includes the dynamic millId
-            const alertMessage = `🚨 URGENT ALERT! Assistance needed immediately. 🚨`;
-            sendToSlack(alertMessage, true);
-        });
+        } catch (error) {
+            console.error(error);
+            // Remove the "Sending..." message on error too
+            const sendingMsg = document.getElementById('sending-status');
+            if (sendingMsg) sendingMsg.remove();
+            
+            addMessageToUI('System', `Error: Could not send message. ${error.message}`, 'received');
+        } finally {
+            // Re-enable the form
+            setSendingState(false);
+        }
+    }
 
-        sendMessageBtn.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-nbsp;         if (message) {
-                sendToSlack(message);
-                messageInput.value = '';
-            }
-        });
+    // This simulation function is unchanged
+    function simulateSlackResponse(originalMessage) {
+        setTimeout(() => {
+            const responses = [
+                "We've received your message and will look into it shortly.",
+                "Acknowledged. The IT team has been notified.",
+                "Thanks for the update. We're on it.",
+                "Got it. An IT member will respond soon."
+            ];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            addMessageToUI('IT Helpdesk', randomResponse, 'received');
+        }, 1500 + Math.random() * 1000); // Respond in 1.5-2.5 seconds
+    }
+    
+    // --- This UI function is updated ---
+    function addMessageToUI(sender, text, type,- optionalId = null) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message flex items-start gap-3 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
+        
+        // Add an ID if one is provided (for the "Sending..." message)
+        if (optionalId) {
+            messageWrapper.id = optionalId;
+        }
 
-        messageInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                sendMessageBtn.click();
-            }
-        });
-    </script>
+        const avatar = document.createElement('div');
+        let avatarStyles = 'bg-blue-500'; // Default for IT Helpdesk
+        if (type === 'sent') {
+            avatarStyles = 'bg-indigo-500';
+        } else if (sender === 'System') {
+            avatarStyles = 'bg-slate-500';
+        }
+        avatar.className = `rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold text-sm ${avatarStyles}`;
+        avatar.textContent = sender.charAt(0);
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = `flex flex-col ${type === 'sent' ? 'items-end' : 'items-start'}`;
+
+        const senderP = document.createElement('p');
+        senderP.className = 'font-semibold text-slate-300';
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-xs text-slate-500 font-normal ml-1';
+        timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (type === 'sent') {
+            senderP.textContent = `You `;
+            senderP.appendChild(timeSpan);
+        } else {
+            senderP.textContent = `${sender} `;
+            senderP.appendChild(timeSpan);
+        }
+
+        const textDiv = document.createElement('div');
+        let textStyles = 'bg-slate-700 text-slate-200'; // Default for received
+        if (type === 'sent') {
+            textStyles = 'bg-blue-600 text-white';
+        } else if (sender === 'System') {
+            textStyles = 'bg-slate-700 text-slate-400 italic';
+        }
+        textDiv.className = `p-3 rounded-lg mt-1 ${textStyles}`;
+        textDiv.textContent = text;
+        
+        messageContent.appendChild(senderP);
+        messageContent.appendChild(textDiv);
+
+        messageWrapper.appendChild(avatar);
+        messageWrapper.appendChild(messageContent);
+        
+        messageContainer.appendChild(messageWrapper);
+        messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll to bottom
+    }
+
+    // --- Run this code when the page loads ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        // Get 'mill' from URL (e.g., ?mill=Mill-20)
+        millId = urlParams.get('mill') || 'Default Mill'; 
+        
+        const headerTitle = document.getElementById('header-title');
+        if (millId !== 'Default Mill') {
+            headerTitle.textContent = `${millId} Helpdesk`;
+        }
+        
+        // Update the alert button text
+        sendAlertBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Send Quick HELP Request (${millId})
+        `;
+    });
+
+    // --- Event Listeners ---
+    sendAlertBtn.addEventListener('click', () => {
+        // The message now includes the dynamic millId
+        const alertMessage = `🚨 URGENT ALERT! Assistance needed immediately. 🚨`;
+        sendToSlack(alertMessage, true);
+    });
+
+    const handleSendMessage = () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            sendToSlack(message);
+            messageInput.value = '';
+        }
+    };
+
+    sendMessageBtn.addEventListener('click', handleSendMessage);
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            handleSendMessage();
+        }
+    });
+</script>
 </body>
 </html>
