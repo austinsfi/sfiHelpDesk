@@ -146,8 +146,9 @@
         }, 1500 + Math.random() * 1000); // Respond in 1.5-2.5 seconds
     }
     
-    // --- This UI function is updated ---
-    function addMessageToUI(sender, text, type,- optionalId = null) {
+    // --- This UI function is FIXED ---
+    // The stray dash before "optionalId" is removed
+    function addMessageToUI(sender, text, type, optionalId = null) {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `message flex items-start gap-3 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
         
@@ -230,7 +231,7 @@
 
     const handleSendMessage = () => {
         const message = messageInput.value.trim();
-        if (message) {
+        if (message && !isSending) { // Check isSending here too
             sendToSlack(message);
             messageInput.value = '';
         }
