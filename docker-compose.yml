@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  slack-alerter:
+    # This tells Docker to build the image from the Dockerfile in the current directory
+    build: .
+    image: slack-alerter-app  # Give the built image a name
+    restart: always
+    ports:
+      # Map port 80 on the host machine to port 8080 inside the container
+      # You can change "80" if you already use it, e.g., "8000:8080"
+      - "80:8080"
+    environment:
+      # This tells the container to get its value from the variable you will set in Portainer
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - PORT=8080
