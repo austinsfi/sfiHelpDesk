@@ -21,13 +21,17 @@
                 transform: translateY(0);
             }
         }
+        /* Hide the default file input button */
+        #screenshot-input {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-2xl mx-auto">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl shadow-blue-500/10 flex flex-col">
-            
+
             <div class="p-6 border-b border-slate-700">
                 <div class="flex items-center justify-center gap-2">
                     <h1 id="header-title" class="text-2xl font-bold text-center">Steel Forgings CNC Helpdesk</h1>
@@ -36,9 +40,7 @@
                         <span class="text-xs text-green-400 font-medium hidden sm:block">Online</span>
                     </div>
                 </div>
-                <p class="text-sm text-slate-400 text-center mt-1">Press the RED button at the bottom to send a "Quick Help", otherwise type out the issue you are having
-                    and IT will respond ASAP. 
-                </p>
+                <p class="text-sm text-slate-400 text-center mt-1">Press a button for a quick alert or type your issue below. Attach a screenshot if needed.</p>
             </div>
 
             <div id="message-container" class="flex-grow p-6 space-y-4 overflow-y-auto h-80 bg-slate-900">
@@ -63,41 +65,67 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     Send Quick HELP Request (Mill 20)
                 </button>
-                
+
                 <div id="heat-treat-buttons" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                    <button id="erp-btn" class="w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                    <button data-message="🚨 URGENT: ERP Issues 🚨" data-alert="true" class="ht-quick-btn w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 disabled:opacity-50">
                         🚨 ERP Issues
                     </button>
-                    <button id="pc-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                    <button data-message="🖥️ PC Hardware Issues 🖥️" data-alert="false" class="ht-quick-btn w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50">
                         🖥️ PC Hardware Issues
                     </button>
-                    <button id="grafana-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                    <button data-message="📊 Grafana Issues 📊" data-alert="false" class="ht-quick-btn w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50">
                         📊 Grafana Issues
                     </button>
-                    <button id="prod-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                    <button data-message="🏭 Production Overview Issues 🏭" data-alert="false" class="ht-quick-btn w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50">
                         🏭 Production Overview Issues
                     </button>
                 </div>
-                
+
+                <p class="text-xs text-slate-500 text-center mb-2">
+                    Need a screenshot? Press <strong>Win + Shift + S</strong>, then paste (<strong>Ctrl+V</strong>) in the message box.
+                </p>
+
                 <div class="flex items-center gap-2">
+
+                    <input type="file" id="screenshot-input" accept="image/*">
+
+                    <button id="attach-file-btn" class="bg-slate-600 hover:bg-slate-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0 shadow-lg disabled:opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+
+                    </button>
+
                     <input type="text" id="message-input" placeholder="Type your message here..." class="flex-grow bg-slate-700 border border-slate-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50">
-                    <button id="send-message-btn" class="bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+
+                    <button id="send-message-btn" class="bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex-shrink-0 shadow-lg shadow-blue-500/20 disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>
+
+                <div id="file-preview-container" class="hidden text-sm text-slate-400 mt-2 flex items-center justify-between">
+                    <span id="file-preview-name"></span>
+                    <button id="clear-file-btn" class="text-red-400 hover:text-red-300 font-bold text-lg">&times;</button>
+                </div>
+
             </div>
         </div>
     </div>
 
 <script>
+    // --- Get All New Elements ---
     const messageContainer = document.getElementById('message-container');
     const sendAlertBtn = document.getElementById('send-alert-btn');
     const sendMessageBtn = document.getElementById('send-message-btn');
     const messageInput = document.getElementById('message-input');
-    
-    // This will hold our mill ID, e.g., "Mill-20"
+
+    const attachFileBtn = document.getElementById('attach-file-btn');
+    const screenshotInput = document.getElementById('screenshot-input');
+    const filePreviewContainer = document.getElementById('file-preview-container');
+    const filePreviewName = document.getElementById('file-preview-name');
+    const clearFileBtn = document.getElementById('clear-file-btn');
+
     let millId = 'Unknown Mill';
-    let isSending = false; // Prevent double-sending
+    let isSending = false;
+    let selectedFile = null; // To hold the selected file
 
     // --- Function to toggle sending state ---
     function setSendingState(sending) {
@@ -105,60 +133,82 @@
         sendAlertBtn.disabled = sending;
         sendMessageBtn.disabled = sending;
         messageInput.disabled = sending;
-        
-        // Also disable new buttons if they exist
-        const htButtons = document.querySelectorAll('#heat-treat-buttons button');
+        attachFileBtn.disabled = sending;
+        clearFileBtn.disabled = sending;
+
+        const htButtons = document.querySelectorAll('.ht-quick-btn');
         htButtons.forEach(btn => btn.disabled = sending);
+    }
+
+    // --- Function to clear the selected file ---
+    function clearFile() {
+        selectedFile = null;
+        screenshotInput.value = null; // Clear the input
+        filePreviewContainer.classList.add('hidden');
+        filePreviewName.textContent = '';
+        attachFileBtn.classList.remove('bg-green-600', 'hover:bg-green-700'); // Remove green "active" color
     }
 
     // --- Function to send to our OWN backend ---
     async function sendToSlack(message, isAlert = false) {
-        if (isSending) return; // Don't send if already sending
-        
+        if (isSending) return;
+
+        // At least one must be present
+        if (!message && !selectedFile) {
+            alert('Please type a message or attach a file.');
+            return;
+        }
+
         setSendingState(true);
-        
-        // Display the message you've sent
-        addMessageToUI('You', message, 'sent');
-        addMessageToUI('System', 'Sending...', 'received', 'sending-status'); // Add a temporary sending message
+
+        // --- We use FormData to send text and files ---
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('mill', millId);
+        formData.append('isAlert', isAlert);
+
+        let displayMessage = message;
+        if (selectedFile) {
+            // Use a default name if the file (from paste) has no name
+            const fileName = selectedFile.name || 'Pasted-Image.png';
+            formData.append('screenshot', selectedFile, fileName);
+            displayMessage = `${message}\n(Attached: ${fileName})`;
+        }
+
+        addMessageToUI('You', displayMessage, 'sent');
+        addMessageToUI('System', 'Sending...', 'received', 'sending-status');
 
         try {
-            // Send to our /api/send endpoint, not Slack
             const response = await fetch('/api/send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                // Send the message AND the millId
-                body: JSON.stringify({ 
-                    message: message, 
-                    mill: millId, 
-                    isAlert: isAlert 
-                }),
+                // !! DO NOT set Content-Type header when using FormData !!
+                body: formData, 
             });
-            
-            // Remove the "Sending..." message
+
             const sendingMsg = document.getElementById('sending-status');
             if (sendingMsg) sendingMsg.remove();
 
             if (!response.ok) {
                 throw new Error('Server returned an error.');
             }
-            
-            // Simulate a response
+
+            // Clear message and file on success
+            messageInput.value = '';
+            clearFile();
+
             simulateSlackResponse(message);
 
         } catch (error) {
             console.error(error);
-            // Remove the "Sending..." message on error too
             const sendingMsg = document.getElementById('sending-status');
             if (sendingMsg) sendingMsg.remove();
-            
             addMessageToUI('System', `Error: Could not send message. ${error.message}`, 'received');
         } finally {
-            // Re-enable the form
             setSendingState(false);
         }
     }
 
-    // This simulation function is unchanged
+    // --- Simulation function (unchanged) ---
     function simulateSlackResponse(originalMessage) {
         setTimeout(() => {
             const responses = [
@@ -169,21 +219,20 @@
             ];
             const randomResponse = responses[Math.floor(Math.random() * responses.length)];
             addMessageToUI('IT Helpdesk', randomResponse, 'received');
-        }, 1500 + Math.random() * 1000); // Respond in 1.5-2.5 seconds
+        }, 1500 + Math.random() * 1000);
     }
-    
-    // --- This UI function is unchanged ---
+
+    // --- UI function (updated for newlines) ---
     function addMessageToUI(sender, text, type, optionalId = null) {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `message flex items-start gap-3 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
-        
-        // Add an ID if one is provided (for the "Sending..." message)
+
         if (optionalId) {
             messageWrapper.id = optionalId;
         }
 
         const avatar = document.createElement('div');
-        let avatarStyles = 'bg-blue-500'; // Default for IT Helpdesk
+        let avatarStyles = 'bg-blue-500';
         if (type === 'sent') {
             avatarStyles = 'bg-indigo-500';
         } else if (sender === 'System') {
@@ -191,7 +240,7 @@
         }
         avatar.className = `rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold text-sm ${avatarStyles}`;
         avatar.textContent = sender.charAt(0);
-        
+
         const messageContent = document.createElement('div');
         messageContent.className = `flex flex-col ${type === 'sent' ? 'items-end' : 'items-start'}`;
 
@@ -210,87 +259,74 @@
         }
 
         const textDiv = document.createElement('div');
-        let textStyles = 'bg-slate-700 text-slate-200'; // Default for received
+        let textStyles = 'bg-slate-700 text-slate-200';
         if (type === 'sent') {
             textStyles = 'bg-blue-600 text-white';
         } else if (sender === 'System') {
             textStyles = 'bg-slate-700 text-slate-400 italic';
         }
+
+        // This makes \n (newlines) show up in the message
+        textDiv.style.whiteSpace = 'pre-wrap';
+
         textDiv.className = `p-3 rounded-lg mt-1 ${textStyles}`;
         textDiv.textContent = text;
-        
+
         messageContent.appendChild(senderP);
         messageContent.appendChild(textDiv);
-
         messageWrapper.appendChild(avatar);
         messageWrapper.appendChild(messageContent);
-        
         messageContainer.appendChild(messageWrapper);
-        messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll to bottom
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 
-    // --- THIS SCRIPT IS UPDATED ---
+    // --- Page Load Script (unchanged) ---
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         millId = urlParams.get('mill') || 'Default Mill'; 
-        
+
         const headerTitle = document.getElementById('header-title');
-        
-        // Get the new Heat-Treat elements
         const heatTreatWarning = document.getElementById('heat-treat-warning');
         const heatTreatButtons = document.getElementById('heat-treat-buttons');
 
         if (millId === 'Heat-Treat') {
-            // This is the Heat-Treat station
             headerTitle.textContent = `Heat-Treat Helpdesk`;
-            
-            // Show Heat-Treat specific elements
             heatTreatWarning.classList.remove('hidden');
             heatTreatButtons.classList.remove('hidden');
-
-            // Hide the default red button
             sendAlertBtn.classList.add('hidden');
 
-            // Add event listeners for new buttons
-            document.getElementById('erp-btn').addEventListener('click', () => {
-                sendToSlack('🚨 URGENT: ERP Issues 🚨', true); // 'true' makes it an alert
-            });
-            document.getElementById('pc-btn').addEventListener('click', () => {
-                sendToSlack('🖥️ PC Hardware Issues 🖥️', false);
-            });
-            document.getElementById('grafana-btn').addEventListener('click', () => {
-                sendToSlack('📊 Grafana Issues 📊', false);
-            });
-            document.getElementById('prod-btn').addEventListener('click', () => {
-                sendToSlack('🏭 Production Overview Issues 🏭', false);
+            document.querySelectorAll('.ht-quick-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const message = button.dataset.message;
+                    const isAlert = button.dataset.alert === 'true';
+                    sendToSlack(message, isAlert);
+                });
             });
 
         } else {
-            // This is for all other mills
             if (millId !== 'Default Mill') {
                 headerTitle.textContent = `${millId} Helpdesk`;
             }
-            
-            // Update the default alert button text
             sendAlertBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="1Two" x2="12.01" y2="17"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 Send Quick HELP Request (${millId})
             `;
         }
     });
 
     // --- Event Listeners ---
+
+    // Default Red Button
     sendAlertBtn.addEventListener('click', () => {
-        // The message now includes the dynamic millId
         const alertMessage = `🚨 URGENT ALERT! Assistance needed immediately. 🚨`;
         sendToSlack(alertMessage, true);
     });
 
+    // Send text message (from button or Enter key)
     const handleSendMessage = () => {
         const message = messageInput.value.trim();
-        if (message && !isSending) { // Check isSending here too
-            sendToSlack(message);
-            messageInput.value = '';
+        if (message || selectedFile) {
+            sendToSlack(message, false);
         }
     };
 
@@ -300,6 +336,61 @@
             handleSendMessage();
         }
     });
+
+    // --- File Input Listeners ---
+
+    // Trigger the hidden file input
+    attachFileBtn.addEventListener('click', () => {
+        screenshotInput.click();
+    });
+
+    // Clear the file
+    clearFileBtn.addEventListener('click', () => {
+        clearFile();
+    });
+
+    // Handle file selection
+    screenshotInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 20 * 1024 * 1024) { // 20MB limit
+                alert('File is too large. Please keep it under 20MB.');
+                clearFile();
+                return;
+            }
+            selectedFile = file;
+            filePreviewName.textContent = file.name;
+            filePreviewContainer.classList.remove('hidden');
+            attachFileBtn.classList.add('bg-green-600', 'hover:bg-green-700'); // Turn green
+        } else {
+            clearFile();
+        }
+    });
+
+    // --- PASTE FROM CLIPBOARD ---
+    messageInput.addEventListener('paste', (event) => {
+        const items = event.clipboardData.items;
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                // We found an image!
+                const file = item.getAsFile();
+
+                if (file.size > 20 * 1024 * 1024) { // 20MB limit
+                    alert('Pasted image is too large. Please keep it under 20MB.');
+                    return;
+                }
+
+                selectedFile = file;
+                filePreviewName.textContent = file.name || 'Pasted-Image.png'; // Provide a default name
+                filePreviewContainer.classList.remove('hidden');
+                attachFileBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+                // Stop the text from being pasted into the input field
+                event.preventDefault(); 
+            }
+        }
+    });
+
 </script>
 </body>
 </html>
