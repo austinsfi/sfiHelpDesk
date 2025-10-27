@@ -54,10 +54,30 @@
             </div>
 
             <div class="p-6 border-t border-slate-700 bg-slate-800/80 rounded-b-2xl">
+
+                <div id="heat-treat-warning" class="hidden p-3 mb-4 bg-yellow-900/50 border border-yellow-700 rounded-lg text-yellow-300 text-sm">
+                    <p><span class="font-bold">Note:</span> Any issues with ERP please comment the issue you are having and IT will be there ASAP.</p>
+                </div>
+
                 <button id="send-alert-btn" class="w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-4 shadow-lg shadow-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     Send Quick HELP Request (Mill 20)
                 </button>
+                
+                <div id="heat-treat-buttons" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    <button id="erp-btn" class="w-full bg-red-600 hover:bg-red-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                        🚨 ERP Issues
+                    </button>
+                    <button id="pc-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                        🖥️ PC Hardware Issues
+                    </button>
+                    <button id="grafana-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                        📊 Grafana Issues
+                    </button>
+                    <button id="prod-btn" class="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 disabled:opacity-50">
+                        🏭 Production Overview Issues
+                    </button>
+                </div>
                 
                 <div class="flex items-center gap-2">
                     <input type="text" id="message-input" placeholder="Type your message here..." class="flex-grow bg-slate-700 border border-slate-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50">
@@ -79,12 +99,16 @@
     let millId = 'Unknown Mill';
     let isSending = false; // Prevent double-sending
 
-    // --- NEW: Function to toggle sending state ---
+    // --- Function to toggle sending state ---
     function setSendingState(sending) {
         isSending = sending;
         sendAlertBtn.disabled = sending;
         sendMessageBtn.disabled = sending;
         messageInput.disabled = sending;
+        
+        // Also disable new buttons if they exist
+        const htButtons = document.querySelectorAll('#heat-treat-buttons button');
+        htButtons.forEach(btn => btn.disabled = sending);
     }
 
     // --- Function to send to our OWN backend ---
@@ -148,8 +172,7 @@
         }, 1500 + Math.random() * 1000); // Respond in 1.5-2.5 seconds
     }
     
-    // --- This UI function is FIXED ---
-    // The stray dash before "optionalId" is removed
+    // --- This UI function is unchanged ---
     function addMessageToUI(sender, text, type, optionalId = null) {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `message flex items-start gap-3 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
@@ -206,22 +229,54 @@
         messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll to bottom
     }
 
-    // --- Run this code when the page loads ---
+    // --- THIS SCRIPT IS UPDATED ---
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
-        // Get 'mill' from URL (e.g., ?mill=Mill-20)
         millId = urlParams.get('mill') || 'Default Mill'; 
         
         const headerTitle = document.getElementById('header-title');
-        if (millId !== 'Default Mill') {
-            headerTitle.textContent = `${millId} Helpdesk`;
-        }
         
-        // Update the alert button text
-        sendAlertBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Send Quick HELP Request (${millId})
-        `;
+        // Get the new Heat-Treat elements
+        const heatTreatWarning = document.getElementById('heat-treat-warning');
+        const heatTreatButtons = document.getElementById('heat-treat-buttons');
+
+        if (millId === 'Heat-Treat') {
+            // This is the Heat-Treat station
+            headerTitle.textContent = `Heat-Treat Helpdesk`;
+            
+            // Show Heat-Treat specific elements
+            heatTreatWarning.classList.remove('hidden');
+            heatTreatButtons.classList.remove('hidden');
+
+            // Hide the default red button
+            sendAlertBtn.classList.add('hidden');
+
+            // Add event listeners for new buttons
+            document.getElementById('erp-btn').addEventListener('click', () => {
+                sendToSlack('🚨 URGENT: ERP Issues 🚨', true); // 'true' makes it an alert
+            });
+            document.getElementById('pc-btn').addEventListener('click', () => {
+                sendToSlack('🖥️ PC Hardware Issues 🖥️', false);
+            });
+            document.getElementById('grafana-btn').addEventListener('click', () => {
+                sendToSlack('📊 Grafana Issues 📊', false);
+            });
+            document.getElementById('prod-btn').addEventListener('click', () => {
+                sendToSlack('🏭 Production Overview Issues 🏭', false);
+            });
+
+        } else {
+            // This is for all other mills
+            if (millId !== 'Default Mill') {
+                headerTitle.textContent = `${millId} Helpdesk`;
+            }
+            
+            // Update the default alert button text
+            sendAlertBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="1Two" x2="12.01" y2="17"></line></svg>
+                Send Quick HELP Request (${millId})
+            `;
+        }
     });
 
     // --- Event Listeners ---
