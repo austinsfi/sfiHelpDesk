@@ -2,15 +2,12 @@ version: '3.8'
 
 services:
   slack-alerter:
-    # This tells Docker to build the image from the Dockerfile in the current directory
     build: .
-    image: slack-alerter-app  # Give the built image a name
+    image: slack-alerter-app
     restart: always
     ports:
-      # Map port 80 on the host machine to port 8080 inside the container
-      # You can change "80" if you already use it, e.g., "8000:8080"
       - "8082:8080"
     environment:
-  - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
-  - SLACK_CHANNEL_ID=${SLACK_CHANNEL_ID}
-  - PORT=8080
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_CHANNEL_ID=${SLACK_CHANNEL_ID}
+      - PORT=8080
