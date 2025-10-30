@@ -29,9 +29,12 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 // Serve static files (our index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json()); // Middleware for Slack Events
+ 
+// --- In-memory store for mill threads ---
+const millThreadStore = {}; // Simple object to store millId -> thread_ts
 
-// --- Socket.io Connection ---
-io.on('connection', (socket) => {
+ // --- Socket.io Connection ---
+ io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
         console.log('User disconnected');
@@ -39,10 +42,21 @@ io.on('connection', (socket) => {
 });
 
 // --- API Endpoints ---
+ 
+// Endpoint to get the last thread_ts for a mill
+app.get('/api/threads/:mill', (req, res) => {
+    const { mill } = req.params;
+    const thread_ts = millThreadStore[mill];
+    if (thread_ts) {
+        res.status(200).json({ ts: thread_ts });
+    } else {
+        res.status(404).json({ error: 'No thread found for this mill.' });
+    }
+});
 
-// Endpoint to handle the initial message from the web UI
-app.post('/api/send', upload.single('screenshot'), async (req, res) => {
-    const { message, mill, isAlert } = req.body;
+ // Endpoint to handle the initial message from the web UI
+ app.post('/api/send', upload.single('screenshot'), async (req, res) => {
+     const { message, mill, isAlert } = req.body;
     const file = req.file;
 
     if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
@@ -76,6 +90,9 @@ app.post('/api/send', upload.single('screenshot'), async (req, res) => {
              return res.status(500).json({ error: 'Failed to get message timestamp from Slack.' });
         }
         
+       // Store the thread_ts for the mill
+       millThreadStore[mill] = thread_ts;
+
         res.status(200).json({ success: true, message: 'Message sent.', ts: thread_ts });
 
     } catch (error) {
