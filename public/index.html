@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Slack Alerter & Messenger</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script> <!-- Socket.io client -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -126,6 +127,19 @@
     let millId = 'Unknown Mill';
     let isSending = false;
     let selectedFile = null; // To hold the selected file
+    let currentThreadTs = null; // To hold the timestamp of the current Slack thread
+
+    // --- Socket.io Connection ---
+    const socket = io();
+
+    socket.on('new_message', (data) => {
+        // Make sure we are in the correct thread
+        if (data.thread_ts === currentThreadTs) {
+            console.log('New message from Slack:', data);
+            // NOTE: You might want to resolve the user ID to a name here
+            addMessageToUI('Slack User', data.text, 'received');
+        }
+    });
 
     // --- Function to toggle sending state ---
     function setSendingState(sending) {
@@ -153,7 +167,12 @@
     async function sendToSlack(message, isAlert = false) {
         if (isSending) return;
 
-        // At least one must be present
+        // If we already have a thread, we are sending a reply
+        if (currentThreadTs) {
+            handleSendMessage();
+            return;
+        }
+
         if (!message && !selectedFile) {
             alert('Please type a message or attach a file.');
             return;
@@ -161,7 +180,6 @@
 
         setSendingState(true);
 
-        // --- We use FormData to send text and files ---
         const formData = new FormData();
         formData.append('message', message);
         formData.append('mill', millId);
@@ -169,34 +187,43 @@
 
         let displayMessage = message;
         if (selectedFile) {
-            // Use a default name if the file (from paste) has no name
             const fileName = selectedFile.name || 'Pasted-Image.png';
             formData.append('screenshot', selectedFile, fileName);
             displayMessage = `${message}\n(Attached: ${fileName})`;
         }
 
         addMessageToUI('You', displayMessage, 'sent');
-        addMessageToUI('System', 'Sending...', 'received', 'sending-status');
+        addMessageToUI('System', 'Sending to Slack...', 'received', 'sending-status');
 
         try {
             const response = await fetch('/api/send', {
                 method: 'POST',
-                // !! DO NOT set Content-Type header when using FormData !!
-                body: formData, 
+                body: formData,
             });
 
+            const result = await response.json();
             const sendingMsg = document.getElementById('sending-status');
             if (sendingMsg) sendingMsg.remove();
 
-            if (!response.ok) {
-                throw new Error('Server returned an error.');
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Server returned an error.');
             }
 
-            // Clear message and file on success
+            // --- THIS IS THE KEY CHANGE ---
+            // Save the timestamp of the message to enable replies
+            currentThreadTs = result.ts;
+            console.log(`Started new thread with ts: ${currentThreadTs}`);
+
             messageInput.value = '';
             clearFile();
 
-            simulateSlackResponse(message);
+            // Disable alert buttons after the first message
+            sendAlertBtn.style.display = 'none';
+            const heatTreatContainer = document.getElementById('heat-treat-buttons');
+            if (heatTreatContainer) heatTreatContainer.style.display = 'none';
+
+
+            addMessageToUI('IT Helpdesk', "We've received your message. You can reply here to add more details.", 'received');
 
         } catch (error) {
             console.error(error);
@@ -209,6 +236,8 @@
     }
 
     // --- Simulation function (unchanged) ---
+    // This function is no longer needed as we have real-time updates
+    /*
     function simulateSlackResponse(originalMessage) {
         setTimeout(() => {
             const responses = [
@@ -221,6 +250,7 @@
             addMessageToUI('IT Helpdesk', randomResponse, 'received');
         }, 1500 + Math.random() * 1000);
     }
+    */
 
     // --- UI function (updated for newlines) ---
     function addMessageToUI(sender, text, type, optionalId = null) {
@@ -323,10 +353,46 @@
     });
 
     // Send text message (from button or Enter key)
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         const message = messageInput.value.trim();
-        if (message || selectedFile) {
-            sendToSlack(message, false);
+        if (!message) return; // Don't send empty messages
+
+        // If we don't have a thread, this is the first message.
+        if (!currentThreadTs) {
+            if (message || selectedFile) {
+                sendToSlack(message, false);
+            }
+            return;
+        }
+
+        // --- This is a REPLY ---
+        setSendingState(true);
+        addMessageToUI('You', message, 'sent');
+        messageInput.value = ''; // Clear input immediately
+
+        try {
+            const response = await fetch('/api/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    thread_ts: currentThreadTs,
+                }),
+            });
+
+            if (!response.ok) {
+                // If sending fails, put the message back in the input
+                messageInput.value = message;
+                throw new Error('Server returned an error.');
+            }
+            // Message sent successfully
+        } catch (error) {
+            console.error('Error sending reply:', error);
+            addMessageToUI('System', `Error: Could not send reply. ${error.message}`, 'received');
+        } finally {
+            setSendingState(false);
         }
     };
 
